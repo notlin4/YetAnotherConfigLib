@@ -60,7 +60,7 @@ loom {
 repositories {
     mavenCentral()
     maven("https://maven.terraformersmc.com")
-    maven("https://maven.quiltmc.org/repository/release")
+    maven("https://maven.quiltmc.org/repository/release/")
 }
 
 val minecraftVersion: String by project
@@ -75,7 +75,12 @@ dependencies {
     })
     modImplementation("net.fabricmc:fabric-loader:$fabricLoaderVersion")
 
-    "modClientImplementation"(fabricApi.module("fabric-resource-loader-v0", "0.76.0+1.19.4"))
+    "modClientImplementation"(fabricApi.module("fabric-resource-loader-v0", "0.78.0+1.19.4"))
+
+    "org.quiltmc:quilt-json5:1.0.3".let {
+        implementation(it)
+        include(it)
+    }
 
     "testmodImplementation"(sourceSets.main.get().output)
     "testmodImplementation"(sourceSets["client"].output)

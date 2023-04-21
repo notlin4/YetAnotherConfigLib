@@ -1,16 +1,18 @@
 package dev.isxander.yacl.test.config;
 
+import com.google.gson.Gson;
+import dev.isxander.yacl.api.config.ModularConfigBuilder;
 import dev.isxander.yacl.config.ConfigEntry;
 import dev.isxander.yacl.config.ConfigInstance;
-import dev.isxander.yacl.config.GsonConfigInstance;
+import dev.isxander.yacl.config.io.GsonConfigIO;
 
 import java.awt.*;
 import java.util.List;
 import java.nio.file.Path;
 
 public class ExampleConfig {
-    public static final ConfigInstance<ExampleConfig> INSTANCE = GsonConfigInstance.createBuilder(ExampleConfig.class)
-            .setPath(Path.of("./config/yacl-test.json"))
+    public static final ConfigInstance<ExampleConfig> INSTANCE = ModularConfigBuilder.create(ExampleConfig.class)
+            .io(new GsonConfigIO(new Gson(), Path.of("config", "yacl", "example.json")))
             .build();
 
     @ConfigEntry public boolean booleanToggle = false;
@@ -21,7 +23,7 @@ public class ExampleConfig {
     @ConfigEntry public float floatSlider = 0;
     @ConfigEntry public long longSlider = 0;
     @ConfigEntry public String textField = "Hello";
-    @ConfigEntry public Color colorOption = Color.red;
+    public Color colorOption = Color.red;
     @ConfigEntry public double doubleField = 0.5;
     @ConfigEntry public float floatField = 0.5f;
     @ConfigEntry public int intField = 5;
