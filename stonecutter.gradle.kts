@@ -2,12 +2,12 @@ plugins {
     id("dev.kikugie.stonecutter")
     id("dev.architectury.loom") version "1.7.+" apply false
 
-    kotlin("jvm") version "1.9.23" apply false
+    kotlin("jvm") version "2.0.21" apply false
 
     id("me.modmuss50.mod-publish-plugin") version "0.5.+" apply false
     id("org.ajoberstar.grgit") version "5.0.+" apply false
 }
-stonecutter active "1.21.2-fabric" /* [SC] DO NOT EDIT */
+stonecutter active "1.21.4-fabric" /* [SC] DO NOT EDIT */
 
 stonecutter.configureEach {
     val platform = project.property("loom.platform")

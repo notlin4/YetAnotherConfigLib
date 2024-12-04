@@ -227,9 +227,9 @@ public class OptionListWidget extends ElementListWidgetExt<OptionListWidget.Entr
     }
 
     public void addEntryBelowWithoutScroll(Entry below, Entry entry) {
-        double d = (double)this.getMaxScroll() - this.getScrollAmount();
+        double d = (double)this.contentHeight() - this.scrollAmount();
         addEntryBelow(below, entry);
-        setScrollAmount(getMaxScroll() - d);
+        setScrollAmount(this.contentHeight() - d);
     }
 
     @Override

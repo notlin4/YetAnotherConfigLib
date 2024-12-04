@@ -1,6 +1,7 @@
 package dev.isxander.yacl3.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.isxander.yacl3.mixin.AbstractSelectionListAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -17,21 +18,26 @@ import java.util.function.Consumer;
 public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> extends ContainerObjectSelectionList<E> implements LayoutElement {
     protected static final int SCROLLBAR_WIDTH = 6;
 
-    private double smoothScrollAmount = getScrollAmount();
+    private double smoothScrollAmount = scrollAmount();
     private boolean returnSmoothAmount = false;
     private final boolean doSmoothScrolling;
     private boolean usingScrollbar;
 
     public ElementListWidgetExt(Minecraft client, int x, int y, int width, int height, boolean smoothScrolling) {
-        /*? if >1.20.2 {*/
-        super(client, width, x, y, height);
-        /*?} else {*/
+        //? if >=1.21.4 {
+        super(client, width, x, y, height, 0);
+        ((AbstractSelectionListAccessor) this).setRenderHeader(false);
+        //?} elif >=1.20.3 {
+        /*super(client, width, x, y, height);
+        *///?} else {
         /*super(client, width, height, y, y + height, 22);
         this.x0 = x;
         this.x1 = x + width;
-        *//*?}*/
+        *///?}
         this.doSmoothScrolling = smoothScrolling;
-        setRenderHeader(false, 0);
+
+        //? if <1.21.4
+        /*setRenderHeader(false, 0);*/
     }
 
     @Override
@@ -42,15 +48,34 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
         /*?}*/
 
         // default implementation bases scroll step from total height of entries, this is constant
-        this.setScrollAmount(this.getScrollAmount() - scroll * 20);
+        this.setScrollAmount(this.scrollAmount() - scroll * 20);
         return true;
     }
 
+    //? if <1.21.4 {
+    /*protected int scrollBarX() {
+        return this.getScrollbarPosition();
+    }
     @Override
     protected int getScrollbarPosition() {
+    *///?} else {
+    @Override
+    protected int scrollBarX() {
+    //?}
         // default implementation does not respect left/right
         return this.getX() + this.getWidth() - SCROLLBAR_WIDTH;
     }
+
+    //? if >=1.21.4 {
+    @Override
+    protected int scrollBarY() {
+        return Math.max(this.getY(), (int)scrollAmount() * (this.height - this.scrollerHeight()) / this.maxScrollAmount() + this.getY());
+    }
+    //?} else {
+    /*protected int maxScrollAmount() {
+        return this.getMaxPosition();
+    }
+    *///?}
 
     @Override
     /*? if >1.20.2 {*/
@@ -66,7 +91,7 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
         smoothScrollAmount = Mth.lerp(
                 delta * 0.5,
                 smoothScrollAmount,
-                getScrollAmount()
+                scrollAmount()
         );
         returnSmoothAmount = true;
 
@@ -84,16 +109,16 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
         returnSmoothAmount = false;
     }
 
-    /*? if >1.20.1 {*/
-    @Override
-    /*?}*/
+    /*? if >1.20.1 && <1.21.4 {*/
+    /*@Override
+    *//*?}*/
     protected boolean isValidMouseClick(int button) {
         return button == InputConstants.MOUSE_BUTTON_LEFT || button == InputConstants.MOUSE_BUTTON_RIGHT || button == InputConstants.MOUSE_BUTTON_MIDDLE;
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && mouseX >= getScrollbarPosition() && mouseX < getScrollbarPosition() + SCROLLBAR_WIDTH) {
+        if (button == 0 && mouseX >= scrollBarX() && mouseX < scrollBarX() + SCROLLBAR_WIDTH) {
             usingScrollbar = true;
         }
 
@@ -120,22 +145,36 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
      * awful code to only use smooth scroll state when rendering,
      * not other code that needs target scroll amount
      */
+    //? if <1.21.4 {
+    /*// backwards compatible method to reduce stonecutter comments
+    protected double scrollAmount() {
+        return this.getScrollAmount();
+    }
+
     @Override
     public double getScrollAmount() {
+    *///?} else {
+    @Override
+    public double scrollAmount() {
+    //?}
         if (returnSmoothAmount && doSmoothScrolling)
             return smoothScrollAmount;
 
-        return super.getScrollAmount();
+        //? if >=1.21.4 {
+        return super.scrollAmount();
+        //?} else {
+        /*return super.getScrollAmount();
+        *///?}
     }
 
     protected void resetSmoothScrolling() {
-        this.smoothScrollAmount = super.getScrollAmount();
+        this.smoothScrollAmount = /*? if >=1.21.4 {*/super.scrollAmount()/*?} else {*//*super.getScrollAmount()*//*?}*/;
     }
 
     @Nullable
     @Override
     protected E getEntryAtPosition(double x, double y) {
-        y += getScrollAmount();
+        y += scrollAmount();
 
         if (x < this.getX() || x > this.getX() + this.getWidth())
             return null;
@@ -159,8 +198,16 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
       code is responsible for having dynamic item heights
     */
 
+    //? if <1.21.4 {
+    /*protected int contentHeight() {
+        return this.getMaxPosition();
+    }
     @Override
     protected int getMaxPosition() {
+    *///?} else {
+    @Override
+    protected int contentHeight() {
+    //?}
         return children().stream().map(E::getItemHeight).reduce(0, Integer::sum) + headerHeight;
     }
 
@@ -175,7 +222,7 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
     @Override
     /*? if >=1.21.2 {*/ public /*?} else {*/ /*protected *//*?}*/
     int getRowTop(int index) {
-        int integer = getY() + 4 - (int) this.getScrollAmount() + headerHeight;
+        int integer = getY() + 4 - (int) this.scrollAmount() + headerHeight;
         for (int i = 0; i < children().size() && i < index; i++)
             integer += children().get(i).getItemHeight();
         return integer;
@@ -186,12 +233,12 @@ public class ElementListWidgetExt<E extends ElementListWidgetExt.Entry<E>> exten
         int i = this.getRowTop(this.children().indexOf(entry));
         int j = i - this.getY() - 4 - entry.getItemHeight();
         if (j < 0) {
-            this.setScrollAmount(this.getScrollAmount() + j);
+            this.setScrollAmount(this.scrollAmount() + j);
         }
 
         int k = this.getY() + this.getHeight()  - i - entry.getItemHeight() * 2;
         if (k < 0) {
-            this.setScrollAmount(this.getScrollAmount() - k);
+            this.setScrollAmount(this.scrollAmount() - k);
         }
     }
 

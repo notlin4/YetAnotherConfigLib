@@ -20,7 +20,7 @@ val isForgeLike = isNeoforge || isForge
 val mcVersion = findProperty("mcVersion").toString()
 
 group = "dev.isxander"
-val versionWithoutMC = "3.6.1"
+val versionWithoutMC = "3.6.2"
 version = "$versionWithoutMC+${stonecutter.current.project}"
 
 val snapshotVer = "${grgit.branch.current().name.replace('/', '.')}-SNAPSHOT"
@@ -130,12 +130,12 @@ dependencies {
     if (isNeoforge) {
         "neoForge"("net.neoforged:neoforge:${findProperty("deps.neoforge")}")
 
-        modImplementation("thedarkcolour:kotlinforforge-neoforge:${findProperty("deps.kotlinForForge")}")
+        modRuntimeOnly("thedarkcolour:kotlinforforge-neoforge:${findProperty("deps.kotlinForForge")}")
     }
     if (isForge) {
         "forge"("net.minecraftforge:forge:${findProperty("deps.forge")}")
 
-        modImplementation("thedarkcolour:kotlinforforge:${findProperty("deps.kotlinForForge")}")
+        modRuntimeOnly("thedarkcolour:kotlinforforge:${findProperty("deps.kotlinForForge")}")
 
         // enable when it's needed
 //        val mixinExtras = findProperty("deps.mixinExtras")

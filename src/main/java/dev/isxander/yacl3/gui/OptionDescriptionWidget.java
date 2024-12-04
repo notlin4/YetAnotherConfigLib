@@ -175,7 +175,8 @@ public class OptionDescriptionWidget extends AbstractWidget {
     }
 
     private Style getDescStyle(int mouseX, int mouseY) {
-        if (!clicked(mouseX, mouseY))
+        boolean clicked = /*? if >=1.21.4 {*/ isMouseOver(mouseX, mouseY) /*?} else {*/ /*clicked(mouseX, mouseY) *//*?}*/;
+        if (!clicked)
             return null;
 
         int x = mouseX - getX();
